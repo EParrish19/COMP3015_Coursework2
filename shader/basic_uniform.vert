@@ -9,12 +9,14 @@ layout (location = 2) in vec2 VertexTexCoord;
 out vec3 Position;
 out vec3 Normal;
 out vec2 TexCoord;
+out vec4 ShadowCoord;
 
 //uniforms for matrices required in the shader
 uniform mat4 ModelViewMatrix;   //model view matrix
 uniform mat3 NormalMatrix;		//normal matrix
 uniform mat4 MVP;				//model view projection matrix
-uniform mat4 ProjectionMatrix;
+uniform mat4 ProjectionMatrix;	//Projection matrix
+uniform mat4 ShadowMatrix;		//shadow matrix
  
 void main() 
 { 
@@ -26,6 +28,9 @@ void main()
 
   //pass texture coordinate on model to fragment shader
   TexCoord = VertexTexCoord;
+
+  //pass shadow coordinate from shadow matrix
+  ShadowCoord = ShadowMatrix * vec4(VertexPosition, 1.0);
 
   gl_Position = MVP * vec4(VertexPosition,1.0); 
 } 
