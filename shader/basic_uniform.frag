@@ -3,6 +3,10 @@
 //in variables relating to vertexes from vertex shader
 in vec3 Position;
 in vec3 Normal;
+in vec4 ShadowCoord;
+
+//shadow map
+uniform sampler2DShadow ShadowMap;
 
 //texture variables
 in vec2 TexCoord;
@@ -134,6 +138,70 @@ vec3 toonShading(vec3 vertPosition, vec3 vertNormal){
     return ambient + diffuse;
 }
 
+//phong shading method with shadows
+vec3 phongModelWithShadows(){
+    
+    //texture setting
+  vec3 metalTexColor = texture(Tex1, TexCoord).rgb;
+  vec4 mossTexColor = texture(Tex2, TexCoord);
+  vec3 texColor = mix(metalTexColor.rgb, mossTexColor.rgb, mossTexColor.a);
+    
+    vec3 n = Normal;
+
+    vec3 s = normalize(vec3(Light.Position) - Position);
+
+    vec3 v = normalize(-Position.xyz);
+
+    vec3 r = reflect(-s, n);
+
+    float sDotN = max(dot(s,n), 0.0);
+
+    vec3 diffuse = Light.Ld * Material.Kd * sDotN * texColor;
+
+    vec3 spec = vec3(0.0);
+
+    if(sDotN > 0.0){
+    
+    spec = Light.Ls * Material.Ks * pow(max(dot(r, v), 0.0), 32) * texColor;
+
+    return diffuse + spec;
+
+    }
+}
+
+subroutine void RenderPassType();
+subroutine uniform RenderPassType RenderPass;
+
+subroutine (RenderPassType)
+void shadeWithShadow(){
+
+vec3 ambient = Light.La * Material.Ka;
+vec3 diffAndSpec = phongModelWithShadows();
+
+float shadow = 1.0;
+
+if(ShadowCoord.z >= 0){
+
+shadow = textureProj(ShadowMap, ShadowCoord);
+
+}
+
+FragColor = vec4(diffAndSpec * shadow + ambient, 1.0);
+
+FragColor = pow(FragColor, vec4(1.0 / 2.2));
+
+
+
+}
+
+subroutine (RenderPassType)
+void RecordDepth()
+{
+
+ //depth written automatically
+
+}
+
 
 void main()
 {
@@ -143,7 +211,10 @@ void main()
     FragColor = vec4(phongModel(Position, Normal), 1.0);
     }else if(shaderID == 2){
     FragColor = vec4(blinnPhongModel(Position, Normal), 1.0);
-    }else{
+    }else if(shaderID == 3){
     FragColor = vec4(toonShading(Position, Normal), 1.0);
+    }
+    else{
+    RenderPass();
     }
 }
