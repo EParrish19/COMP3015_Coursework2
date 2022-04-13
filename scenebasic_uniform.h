@@ -25,7 +25,7 @@ private:
     Plane plane;
 
     int shadowMapWidth, shadowMapHeight;
-    float tprev;
+    float tPrev;
 
     glm::mat4 lightPV, shadowBias;
 

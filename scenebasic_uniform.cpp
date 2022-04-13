@@ -7,32 +7,58 @@ using std::endl;
 #include <glm/gtc/matrix_transform.hpp>
 using glm::vec3;
 using glm::mat4;
+using glm::vec4;
 
 //variables used in update method
 float angle;
 float timer;
-float tPrev;
 int shaderID;
 
 //constructor for scene objects
-SceneBasic_Uniform::SceneBasic_Uniform() : teapot(13, mat4(1.0f)), plane(50.0f, 50.0f, 1.0f, 1.0f), torus(1.75f * 0.75f, 0.75f * 0.75f, 50, 50) {}
+SceneBasic_Uniform::SceneBasic_Uniform() : tPrev(0), shadowMapWidth(512), shadowMapHeight(512), teapot(14, mat4(1.0f)), plane(40.0f, 40.0f, 2.0f, 2.0f), torus(0.7f * 2.0f, 0.3f * 2.0f, 50, 50) {}
 
 void SceneBasic_Uniform::initScene()
 {
     compile();
+
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+
 	glEnable(GL_DEPTH_TEST);
 
     //variables used in update method
-    angle = 0.0f;
+    angle = glm::quarter_pi<float>();
     tPrev = 0.0f;
     timer = 10.0f;
 
+    //set up object for framebuffer
+    setupFBO();
+
+    GLuint programHandle = prog.getHandle();
+    pass1Index = glGetSubroutineIndex(programHandle, GL_FRAGMENT_SHADER, "recordDepth");
+    pass2Index = glGetSubroutineIndex(programHandle, GL_FRAGMENT_SHADER, "shadeWithShadow");
+
+    shadowBias = mat4(vec4(0.5f, 0.0f, 0.0f, 0.0f),
+        vec4(0.0f, 0.5f, 0.0f, 0.0f),
+        vec4(0.0f, 0.0f, 0.5f, 0.0f),
+        vec4(0.0f, 0.0f, 0.0f, 0.5f));
+
+    float c = 1.65f;
+
+    vec3 lightPos = vec3(0.0f, c * 5.25f, c * 7.5f); //in world coords
+
+    lightFrustum.orient(lightPos, vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
+    lightFrustum.setPerspective(50.0f, 1.0f, 1.0f, 25.0f);
+    lightPV = shadowBias * lightFrustum.getProjectionMatrix() * lightFrustum.getViewMatrix();
+
+    prog.setUniform("Light.La", vec3(0.85f));
+    prog.setUniform("Light.Ld", vec3(0.85f));
+    prog.setUniform("Light.Ls", vec3(0.85f));
+    prog.setUniform("ShadowMap", 0);
+
+
     //initialize shader ID to phong shading
-    shaderID = 1;
+    shaderID = 4;
     prog.setUniform("shaderID", shaderID);
-   
-    //initialise the model matrix
-    model = mat4(1.0f);
 
     //set up textures
     GLuint metal = Texture::loadTexture("./media/texture/me_textile.png");
@@ -43,16 +69,6 @@ void SceneBasic_Uniform::initScene()
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, moss);
-
-    //initialize the scene
-    view = glm::lookAt(vec3(5.0f, 5.0f, 7.5f), vec3(0.0f, 0.75f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
-    projection = mat4(1.0f);
-
-    //set up directional Light
-    prog.setUniform("Light.Ld", 1.0f, 1.0f, 1.0f);     
-    prog.setUniform("Light.Position", view * glm::vec4(5.0f, 5.0f, 2.0f, 0.0f));
-    prog.setUniform("Light.La", 0.7f, 0.4f, 0.0f);
-    prog.setUniform("Light.Ls", 0.5f, 0.5f, 0.5f);
 }
 
 void SceneBasic_Uniform::compile()
