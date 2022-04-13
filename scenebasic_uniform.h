@@ -11,20 +11,37 @@
 #include <glm/glm.hpp>
 #include "helper/texture.h"
 #include "helper/plane.h"
+#include "helper/frustum.h"
 
 class SceneBasic_Uniform : public Scene
 {
 private:
-    GLSLProgram prog;
+    GLSLProgram prog, solidProg;
+    GLuint shadowFBO, pass1Index, pass2Index;
     
     //variables for object in the scene
     Torus torus;
     Teapot teapot;
     Plane plane;
 
+    int shadowMapWidth, shadowMapHeight;
+    float tprev;
+
+    glm::mat4 lightPV, shadowBias;
+
+    float angle;
+
+    Frustum lightFrustum;
+
     void setMatrices();
 
     void compile();
+
+    void setupFBO();
+
+    void drawScene();
+
+    void spitOutDepthBuffer();
 
 public:
     SceneBasic_Uniform();
