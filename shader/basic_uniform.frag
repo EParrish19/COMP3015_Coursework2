@@ -10,8 +10,8 @@ uniform sampler2DShadow ShadowMap;
 
 //texture variables
 in vec2 TexCoord;
-layout (binding = 0) uniform sampler2D Tex1;
-layout (binding = 1) uniform sampler2D Tex2;
+layout (binding = 1) uniform sampler2D Tex1;
+layout (binding = 2) uniform sampler2D Tex2;
 
  //light information struct
 uniform struct LightInfo 
