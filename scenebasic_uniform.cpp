@@ -260,6 +260,8 @@ void SceneBasic_Uniform::setMatrices()
     prog.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2]))); //set the uniform for normal matrix
     
     prog.setUniform("MVP", projection * mv); //set the model view matrix with mv and projection matrix
+
+    prog.setUniform("ShadowMatrix", lightPV * model); // sets shadow matrix
 }
 
 void SceneBasic_Uniform::resize(int w, int h)
