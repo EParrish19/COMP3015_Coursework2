@@ -122,8 +122,8 @@ void SceneBasic_Uniform::compile()
 		prog.use();
 
         //light frustum rendering
-        solidProg.compileShader("shader/solid.vs", GLSLShader::VERTEX);
-        solidProg.compileShader("shader/solid.fs", GLSLShader::FRAGMENT);
+        solidProg.compileShader("shader/solid.vert", GLSLShader::VERTEX);
+        solidProg.compileShader("shader/solid.frag", GLSLShader::FRAGMENT);
         solidProg.link();
 
 	} catch (GLSLProgramException &e) {
