@@ -120,6 +120,12 @@ void SceneBasic_Uniform::compile()
 		prog.compileShader("shader/basic_uniform.frag");
 		prog.link();
 		prog.use();
+
+        //light frustum rendering
+        solidProg.compileShader("shader/solid.vs", GLSLShader::VERTEX);
+        solidProg.compileShader("shader/solid.fs", GLSLShader::FRAGMENT);
+        solidProg.link();
+
 	} catch (GLSLProgramException &e) {
 		cerr << e.what() << endl;
 		exit(EXIT_FAILURE);
@@ -138,15 +144,15 @@ void SceneBasic_Uniform::update( float t )
 
     tPrev = t;
 
-    timer -= deltaT;
-    angle += 4.0f * deltaT;
+    //timer -= deltaT;
+    angle += 0.2f * deltaT;
 
     //reset angle if a full rotation has been done
-    if (angle > 360.0f) {
-        angle = 0.0f;
+    if (angle > glm::two_pi<float>()) {
+        angle -= glm::two_pi<float>();
     }
 
-    //when the timer hits 0, change the shader ID given to shader
+    /*//when the timer hits 0, change the shader ID given to shader
     if (timer <= 0.0f) {
         timer = 10.0f;
         
@@ -158,57 +164,55 @@ void SceneBasic_Uniform::update( float t )
         }
 
         prog.setUniform("shaderID", shaderID);
-    }
+    }*/
 
     
 }
 
 void SceneBasic_Uniform::render()
 {
+
+    prog.use();
+    //pass 1 (generate the shadow map from light perspective)
+    view = lightFrustum.getViewMatrix();
+    projection = lightFrustum.getProjectionMatrix();
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, shadowMapWidth, shadowMapHeight);
+    glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass1Index);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(2.5f, 10.0f);
+    drawScene();
+    glCullFace(GL_BACK);
+    glFlush();
+    //spitOutDepthBuffer(); // for getting image of depth buffer
+
+    //pass 2 (render scene normally)
+    float c = 2.0f;
+    vec3 cameraPos(c * 11.5f * cos(angle), c * 7.0f, c * 11.5f * sin(angle));
+    view = glm::lookAt(cameraPos, vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
+    prog.setUniform("Light.Position", view * vec4(lightFrustum.getOrigin(), 1.0f));
+    projection = glm::perspective(glm::radians(50.0f), (float)width / height, 0.1f, 100.0f);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, width, height);
+    glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass2Index);
+    drawScene();
 
-    //set up material for teapot
-    prog.setUniform("Material.Kd", 0.2f, 0.55f, 0.9f);
-    prog.setUniform("Material.Ka", 0.1f, 0.25f, 0.45f);
-    prog.setUniform("Material.Ks", 0.6f, 0.8f, 1.0f);
+    //draw light Frustum
+    solidProg.use();
+    solidProg.setUniform("Color", vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    mat4 mv = view * lightFrustum.getInverseViewMatrix();
+    solidProg.setUniform("MVP", projection * mv);
+    lightFrustum.render();
+}
 
-    //set model matrix for teapot
-    model = mat4(1.0f);
-    model = glm::translate(model, vec3(0.0f, 0.0f, -2.0f));
-    model = glm::rotate(model, glm::radians(45.0f), vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(-90.0f), vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(angle), vec3(0.0f, 0.0f, 1.0f));
+void SceneBasic_Uniform::drawScene()
+{
 
-    //render teapot
-    setMatrices();
-    teapot.render();
-
-    //set up material for torus
-    prog.setUniform("Material.Kd", 0.2f, 0.55f, 0.9f);
-    prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
-    prog.setUniform("Material.Ka", 0.2f * 0.3f, 0.55f * 0.3f, 0.9f * 0.3f);
-
-    //set model matrix for torus
-    model = mat4(1.0f);
-    model = glm::translate(model, vec3(-1.0f, 0.75f, 3.0f));
-    model = glm::rotate(model, glm::radians(-90.0f), vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(angle), vec3(0.0f, 0.0f, 1.0f));
-
-    //render torus
-    setMatrices();
-    torus.render();
-
-    //set up material for plane (flat surface)
-    prog.setUniform("Material.Kd", 0.7f, 0.7f, 0.7f);
-    prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
-    prog.setUniform("Material.Ka", 0.2f * 0.3f, 0.55f * 0.3f, 0.9f * 0.3f);
-
-    //set model matrix for plane
-    model = mat4(1.0f);
-
-    //render plane
-    setMatrices();
-    plane.render();
 }
 
 void SceneBasic_Uniform::setMatrices()
