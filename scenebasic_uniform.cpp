@@ -212,7 +212,43 @@ void SceneBasic_Uniform::render()
 
 void SceneBasic_Uniform::drawScene()
 {
+    vec3 color = vec3(0.2f, 0.5f, 0.9f);
+    prog.setUniform("Material.Ka", color * 0.05f);
+    prog.setUniform("Material.Kd", color);
+    prog.setUniform("Material.Ks", vec3(0.9f, 0.9f, 0.9f));
+    model = mat4(1.0f);
+    model = glm::rotate(model, glm::radians(-90.0f), vec3(1.0f, 0.0f, 0.0f));
+    setMatrices();
+    teapot.render();
 
+    prog.setUniform("Material.Ka", color * 0.05f);
+    prog.setUniform("Material.Kd", color);
+    prog.setUniform("Material.Ks", vec3(0.9f, 0.9f, 0.9f));
+    model = mat4(1.0f);
+    model = glm::translate(model, vec3(0.0f, 2.0f, 5.0f));
+    model = glm::rotate(model, glm::radians(-45.0f), vec3(1.0f, 0.0f, 0.0f));
+    setMatrices();
+    torus.render();
+
+    prog.setUniform("Material.Kd", 0.25f, 0.25f, 0.25f);
+    prog.setUniform("Material.Ks", 0.0f, 0.0f, 0.0f);
+    prog.setUniform("Material.Ka", 0.05f, 0.05f, 0.05f);
+    model = mat4(1.0f);
+    setMatrices();
+    plane.render();
+    
+    model = mat4(1.0f);
+    model = glm::translate(model, vec3(-5.0f, 5.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(-90.0f), vec3(0.0f, 0.0f, 1.0f));
+    setMatrices();
+    plane.render();
+
+    model = mat4(1.0f);
+    model = glm::translate(model, vec3(0.0f, 5.0f, -5.0f));
+    model = glm::rotate(model, glm::radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
+    setMatrices();
+    plane.render();
+    model = mat4(1.0f);
 }
 
 void SceneBasic_Uniform::setMatrices()
