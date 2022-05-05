@@ -40,7 +40,7 @@ void SceneBasic_Uniform::initScene()
     shadowBias = mat4(vec4(0.5f, 0.0f, 0.0f, 0.0f),
         vec4(0.0f, 0.5f, 0.0f, 0.0f),
         vec4(0.0f, 0.0f, 0.5f, 0.0f),
-        vec4(0.0f, 0.0f, 0.0f, 0.5f));
+        vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
     float c = 1.65f;
 
@@ -56,7 +56,7 @@ void SceneBasic_Uniform::initScene()
     prog.setUniform("ShadowMap", 0);
 
 
-    //initialize shader ID to phong shading
+    //initialize shader ID to phong shading with shadows
     shaderID = 4;
     prog.setUniform("shaderID", shaderID);
 
@@ -88,7 +88,7 @@ void SceneBasic_Uniform::setupFBO()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
 
     //assign depth buffer texture
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, depthTex);
 
     //create FBO

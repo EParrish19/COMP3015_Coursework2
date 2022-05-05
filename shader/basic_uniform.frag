@@ -1,4 +1,4 @@
-#version 460
+#version 430
 
 //in variables relating to vertexes from vertex shader
 in vec3 Position;
