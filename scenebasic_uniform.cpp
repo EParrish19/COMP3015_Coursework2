@@ -34,7 +34,7 @@ void SceneBasic_Uniform::initScene()
     setupFBO();
 
     GLuint programHandle = prog.getHandle();
-    pass1Index = glGetSubroutineIndex(programHandle, GL_FRAGMENT_SHADER, "recordDepth");
+    pass1Index = glGetSubroutineIndex(programHandle, GL_FRAGMENT_SHADER, "RecordDepth");
     pass2Index = glGetSubroutineIndex(programHandle, GL_FRAGMENT_SHADER, "shadeWithShadow");
 
     shadowBias = mat4(vec4(0.5f, 0.0f, 0.0f, 0.0f),
