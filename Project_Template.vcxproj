@@ -204,6 +204,9 @@
   <ItemGroup>
     <None Include="shader\solid.frag" />
     <None Include="shader\solid.vert" />
+    <None Include="shader\wireframe.frag" />
+    <None Include="shader\wireframe.geom" />
+    <None Include="shader\wireframe.vert" />
     <None Include="shadows.frag" />
     <None Include="shadows.vert" />
   </ItemGroup>
