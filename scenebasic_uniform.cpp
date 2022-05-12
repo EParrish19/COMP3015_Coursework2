@@ -13,6 +13,8 @@ using glm::vec4;
 float angle;
 float timer;
 
+int shaderID;
+
 //constructor for scene objects
 SceneBasic_Uniform::SceneBasic_Uniform() : tPrev(0), shadowMapWidth(512), shadowMapHeight(512), teapot(14, mat4(1.0f)), plane(40.0f, 40.0f, 2.0f, 2.0f), torus(0.7f * 2.0f, 0.3f * 2.0f, 50, 50) {}
 
@@ -28,6 +30,7 @@ void SceneBasic_Uniform::initScene()
     angle = glm::quarter_pi<float>();
     tPrev = 0.0f;
     timer = 10.0f;
+    shaderID = 0;
 
     //set up object for framebuffer
     setupFBO();
@@ -53,6 +56,16 @@ void SceneBasic_Uniform::initScene()
     prog.setUniform("Light.Ld", vec3(0.85f));
     prog.setUniform("Light.Ls", vec3(0.85f));
     prog.setUniform("ShadowMap", 0);
+
+    wireProg.setUniform("Line.Width", 0.75f);
+    wireProg.setUniform("Line.Color", vec4(0.05f, 0.0f, 0.05f, 1.0f));
+    wireProg.setUniform("Material.Kd", 0.7f, 0.7f, 0.7f);
+    wireProg.setUniform("Light.Position", vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    wireProg.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
+    wireProg.setUniform("Light.Intensity", 1.0f, 1.0f, 1.0f);
+    wireProg.setUniform("Material.Ks", 0.8f, 0.8f, 0.8f);
+    wireProg.setUniform("Material.Shininess", 100.0f);
+
 
     //set up textures
     GLuint metal = Texture::loadTexture("./media/texture/me_textile.png");
@@ -116,6 +129,12 @@ void SceneBasic_Uniform::compile()
 		prog.link();
 		prog.use();
 
+        //wireframe rendering
+        wireProg.compileShader("shader/wireframe.vert");
+        wireProg.compileShader("shader/wireframe.geom", GLSLShader::GEOMETRY);
+        wireProg.compileShader("shader/wireframe.frag");
+        wireProg.link();
+
         //light frustum rendering
         solidProg.compileShader("shader/solid.vert", GLSLShader::VERTEX);
         solidProg.compileShader("shader/solid.frag", GLSLShader::FRAGMENT);
@@ -166,43 +185,69 @@ void SceneBasic_Uniform::update( float t )
 
 void SceneBasic_Uniform::render()
 {
+    switch (shaderID) {
 
-    prog.use();
-    //pass 1 (generate the shadow map from light perspective)
-    view = lightFrustum.getViewMatrix();
-    projection = lightFrustum.getProjectionMatrix();
-    glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, shadowMapWidth, shadowMapHeight);
-    glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass1Index);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
-    glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(2.5f, 10.0f);
-    drawScene();
-    glCullFace(GL_BACK);
-    glFlush();
-    //spitOutDepthBuffer(); // for getting image of depth buffer
+    case(0):
+        prog.use();
+        //pass 1 (generate the shadow map from light perspective)
+        view = lightFrustum.getViewMatrix();
+        projection = lightFrustum.getProjectionMatrix();
+        glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, shadowMapWidth, shadowMapHeight);
+        glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass1Index);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(2.5f, 10.0f);
+        drawScene();
+        glCullFace(GL_BACK);
+        glFlush();
+        //spitOutDepthBuffer(); // for getting image of depth buffer
 
-    //pass 2 (render scene normally)
-    float c = 2.0f;
-    vec3 cameraPos(c * 11.5f * cos(angle), c * 7.0f, c * 11.5f * sin(angle));
-    view = glm::lookAt(cameraPos, vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
-    prog.setUniform("Light.Position", view * vec4(lightFrustum.getOrigin(), 1.0f));
-    projection = glm::perspective(glm::radians(50.0f), (float)width / height, 0.1f, 100.0f);
+        //pass 2 (render scene normally)
+        float c = 2.0f;
+        vec3 cameraPos(c * 11.5f * cos(angle), c * 7.0f, c * 11.5f * sin(angle));
+        view = glm::lookAt(cameraPos, vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
+        prog.setUniform("Light.Position", view * vec4(lightFrustum.getOrigin(), 1.0f));
+        projection = glm::perspective(glm::radians(50.0f), (float)width / height, 0.1f, 100.0f);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, width, height);
-    glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass2Index);
-    drawScene();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, width, height);
+        glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass2Index);
+        drawScene();
 
-    //draw light Frustum
-    solidProg.use();
-    solidProg.setUniform("Color", vec4(1.0f, 0.0f, 0.0f, 1.0f));
-    mat4 mv = view * lightFrustum.getInverseViewMatrix();
-    solidProg.setUniform("MVP", projection * mv);
-    lightFrustum.render();
+        //draw light Frustum
+        solidProg.use();
+        solidProg.setUniform("Color", vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        mat4 mv = view * lightFrustum.getInverseViewMatrix();
+        solidProg.setUniform("MVP", projection * mv);
+        lightFrustum.render();
+
+        break;
+
+    case(1):
+        wireProg.use();
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        model = mat4(1.0f);
+        model = glm::rotate(model, glm::radians(-90.0f), vec3(1.0f, 0.0f, 0.0f));
+        setMatrices();
+        teapot.render();
+
+        model = mat4(1.0f);
+        model = glm::translate(model, vec3(0.0f, 2.0f, 5.0f));
+        model = glm::rotate(model, glm::radians(-45.0f), vec3(1.0f, 0.0f, 0.0f));
+        setMatrices();
+        torus.render();
+
+        model = mat4(1.0f);
+        setMatrices();
+        plane.render();
+
+    }
 }
 
 void SceneBasic_Uniform::drawScene()
@@ -257,6 +302,14 @@ void SceneBasic_Uniform::setMatrices()
     prog.setUniform("MVP", projection * mv); //set the model view matrix with mv and projection matrix
 
     prog.setUniform("ShadowMatrix", lightPV * model); // sets shadow matrix
+    
+    wireProg.setUniform("ModelViewMatrix", mv);
+
+    wireProg.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2])));
+
+    wireProg.setUniform("MVP", projection * mv);
+
+    wireProg.setUniform("ViewpoerMatrix", viewport);
 }
 
 void SceneBasic_Uniform::resize(int w, int h)
@@ -265,4 +318,12 @@ void SceneBasic_Uniform::resize(int w, int h)
     width = w;
     height = h;
     projection = glm::perspective(glm::radians(70.0f), (float)w / h, 0.3f, 100.0f);
+
+    float w2 = w / 2.0f;
+    float h2 = h / 2.0f;
+
+    viewport = mat4(vec4(w2, 0.0f, 0.0f, 0.0f), 
+        vec4(0.0f, h2, 0.0f, 0.0f),
+        vec4(0.0f, 0.0f, 1.0f, 0.0f),
+        vec4(w2 + 0, h2 + 0, 0.0f, 1.0f));
 }

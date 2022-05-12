@@ -16,7 +16,7 @@
 class SceneBasic_Uniform : public Scene
 {
 private:
-    GLSLProgram prog, solidProg;
+    GLSLProgram prog, solidProg, wireProg;
     GLuint shadowFBO, pass1Index, pass2Index;
     
     //variables for object in the scene
@@ -24,10 +24,10 @@ private:
     Teapot teapot;
     Plane plane;
 
-    int shadowMapWidth, shadowMapHeight;
+    int shadowMapWidth, shadowMapHeight, shaderID;
     float tPrev;
 
-    glm::mat4 lightPV, shadowBias;
+    glm::mat4 lightPV, shadowBias, viewport;
 
     float angle;
 
