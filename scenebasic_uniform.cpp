@@ -12,7 +12,6 @@ using glm::vec4;
 //variables used in update method
 float angle;
 float timer;
-int shaderID;
 
 //constructor for scene objects
 SceneBasic_Uniform::SceneBasic_Uniform() : tPrev(0), shadowMapWidth(512), shadowMapHeight(512), teapot(14, mat4(1.0f)), plane(40.0f, 40.0f, 2.0f, 2.0f), torus(0.7f * 2.0f, 0.3f * 2.0f, 50, 50) {}
@@ -50,15 +49,10 @@ void SceneBasic_Uniform::initScene()
     lightFrustum.setPerspective(50.0f, 1.0f, 1.0f, 25.0f);
     lightPV = shadowBias * lightFrustum.getProjectionMatrix() * lightFrustum.getViewMatrix();
 
-    prog.setUniform("Light.La", vec3(0.85f));
+    prog.setUniform("Light.La", vec3(0.0f));
     prog.setUniform("Light.Ld", vec3(0.85f));
     prog.setUniform("Light.Ls", vec3(0.85f));
     prog.setUniform("ShadowMap", 0);
-
-
-    //initialize shader ID to phong shading with shadows
-    shaderID = 4;
-    prog.setUniform("shaderID", shaderID);
 
     //set up textures
     GLuint metal = Texture::loadTexture("./media/texture/me_textile.png");
@@ -116,8 +110,9 @@ void SceneBasic_Uniform::setupFBO()
 void SceneBasic_Uniform::compile()
 {
 	try {
-		prog.compileShader("shader/basic_uniform.vert");
-		prog.compileShader("shader/basic_uniform.frag");
+        //shadow and standard rendering
+		prog.compileShader("shader/shadows.vert");
+		prog.compileShader("shader/shadows.frag");
 		prog.link();
 		prog.use();
 
@@ -144,7 +139,7 @@ void SceneBasic_Uniform::update( float t )
 
     tPrev = t;
 
-    //timer -= deltaT;
+    timer -= deltaT;
     angle += 0.2f * deltaT;
 
     //reset angle if a full rotation has been done
@@ -237,18 +232,18 @@ void SceneBasic_Uniform::drawScene()
     setMatrices();
     plane.render();
     
-    model = mat4(1.0f);
+    /*model = mat4(1.0f);
     model = glm::translate(model, vec3(-5.0f, 5.0f, 0.0f));
     model = glm::rotate(model, glm::radians(-90.0f), vec3(0.0f, 0.0f, 1.0f));
     setMatrices();
-    plane.render();
+    plane.render();*/
 
-    model = mat4(1.0f);
+    /*model = mat4(1.0f);
     model = glm::translate(model, vec3(0.0f, 5.0f, -5.0f));
     model = glm::rotate(model, glm::radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
     setMatrices();
     plane.render();
-    model = mat4(1.0f);
+    model = mat4(1.0f);*/
 }
 
 void SceneBasic_Uniform::setMatrices()

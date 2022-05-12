@@ -138,7 +138,7 @@ vec3 toonShading(vec3 vertPosition, vec3 vertNormal){
     return ambient + diffuse;
 }
 
-//phong shading method with shadows
+/*//phong shading method with shadows
 vec3 phongModelWithShadows(){
     
     //texture setting
@@ -200,7 +200,7 @@ void RecordDepth()
 
  //depth written automatically
 
-}
+}*/
 
 
 void main()
@@ -215,6 +215,6 @@ void main()
     FragColor = vec4(toonShading(Position, Normal), 1.0);
     }
     else{
-    RenderPass();
+    //RenderPass();
     }
 }
