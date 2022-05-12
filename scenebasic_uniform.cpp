@@ -4,6 +4,8 @@
 using std::cerr;
 using std::endl;
 
+#include <GLFW/glfw3.h>
+
 #include <glm/gtc/matrix_transform.hpp>
 using glm::vec3;
 using glm::mat4;
@@ -25,6 +27,8 @@ void SceneBasic_Uniform::initScene()
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
 	glEnable(GL_DEPTH_TEST);
+
+    
 
     //variables used in update method
     angle = glm::quarter_pi<float>();
