@@ -15,8 +15,6 @@ using glm::vec4;
 float angle;
 float timer;
 
-int shaderID;
-
 //constructor for scene objects
 SceneBasic_Uniform::SceneBasic_Uniform() : tPrev(0), shadowMapWidth(512), shadowMapHeight(512), teapot(14, mat4(1.0f)), plane(40.0f, 40.0f, 2.0f, 2.0f), torus(0.7f * 2.0f, 0.3f * 2.0f, 50, 50) {}
 
@@ -134,9 +132,9 @@ void SceneBasic_Uniform::compile()
 		prog.use();
 
         //wireframe rendering
-        wireProg.compileShader("shader/wireframe.vert");
+        wireProg.compileShader("shader/wireframe.vert", GLSLShader::VERTEX);
         wireProg.compileShader("shader/wireframe.geom", GLSLShader::GEOMETRY);
-        wireProg.compileShader("shader/wireframe.frag");
+        wireProg.compileShader("shader/wireframe.frag", GLSLShader::FRAGMENT);
         wireProg.link();
 
         //light frustum rendering
@@ -170,19 +168,17 @@ void SceneBasic_Uniform::update( float t )
         angle -= glm::two_pi<float>();
     }
 
-    /*//when the timer hits 0, change the shader ID given to shader
+    //when the timer hits 0, change the shader ID given to shader
     if (timer <= 0.0f) {
         timer = 10.0f;
         
-        if (!(shaderID == 3)) {
+        if (!(shaderID == 1)) {
             shaderID += 1;
         }
         else {
-            shaderID = 1;
+            shaderID = 0;
         }
-
-        prog.setUniform("shaderID", shaderID);
-    }*/
+    }
 
     
 }
@@ -192,6 +188,7 @@ void SceneBasic_Uniform::render()
     switch (shaderID) {
 
     case(0):
+    {
         prog.use();
         //pass 1 (generate the shadow map from light perspective)
         view = lightFrustum.getViewMatrix();
@@ -230,11 +227,18 @@ void SceneBasic_Uniform::render()
         lightFrustum.render();
 
         break;
+    }
 
     case(1):
+    {
         wireProg.use();
+        float c = 2.0f;
+        vec3 cameraPos(c * 11.5f * cos(angle), c * 7.0f, c * 11.5f * sin(angle));
+        view = glm::lookAt(cameraPos, vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
 
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, width, height);
 
         model = mat4(1.0f);
         model = glm::rotate(model, glm::radians(-90.0f), vec3(1.0f, 0.0f, 0.0f));
@@ -250,6 +254,9 @@ void SceneBasic_Uniform::render()
         model = mat4(1.0f);
         setMatrices();
         plane.render();
+
+        break;
+    }
 
     }
 }
@@ -299,21 +306,25 @@ void SceneBasic_Uniform::setMatrices()
 {
     mat4 mv = view * model; //create a model view matrix
     
-    prog.setUniform("ModelViewMatrix", mv); //set the uniform for the model view matrix
-    
-    prog.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2]))); //set the uniform for normal matrix
-    
-    prog.setUniform("MVP", projection * mv); //set the model view matrix with mv and projection matrix
+    if (shaderID == 0) {
+        prog.setUniform("ModelViewMatrix", mv); //set the uniform for the model view matrix
 
-    prog.setUniform("ShadowMatrix", lightPV * model); // sets shadow matrix
-    
-    wireProg.setUniform("ModelViewMatrix", mv);
+        prog.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2]))); //set the uniform for normal matrix
 
-    wireProg.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2])));
+        prog.setUniform("MVP", projection * mv); //set the model view matrix with mv and projection matrix
 
-    wireProg.setUniform("MVP", projection * mv);
+        prog.setUniform("ShadowMatrix", lightPV * model); // sets shadow matrix
+    }
+    else {
 
-    wireProg.setUniform("ViewpoerMatrix", viewport);
+        wireProg.setUniform("ModelViewMatrix", mv);
+
+        wireProg.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2])));
+
+        wireProg.setUniform("MVP", projection * mv);
+
+        wireProg.setUniform("ViewportMatrix", viewport);
+    }
 }
 
 void SceneBasic_Uniform::resize(int w, int h)

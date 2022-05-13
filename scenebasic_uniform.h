@@ -50,7 +50,6 @@ public:
     void update( float t );
     void render();
     void resize(int, int);
-    void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 };
 
 #endif // SCENEBASIC_UNIFORM_H
