@@ -28,8 +28,6 @@ void SceneBasic_Uniform::initScene()
 {
     compile();
 
-    glfwSetKeyCallback(glfwGetCurrentContext(), key_callback);
-
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
 	glEnable(GL_DEPTH_TEST);
@@ -178,7 +176,7 @@ void SceneBasic_Uniform::update( float t )
     }
 
     //when the timer hits 0, change the shader ID given to shader
-    if (timer <= 0.0f) {
+    /*if (timer <= 0.0f) {
         timer = 10.0f;
         
         if (!(shaderID == 1)) {
@@ -187,6 +185,20 @@ void SceneBasic_Uniform::update( float t )
         else {
             shaderID = 0;
         }
+    }*/
+
+    GLFWwindow* window = glfwGetCurrentContext();
+
+    int state = glfwGetKey(window, keyInput::leftArrow);
+
+    if (state == GLFW_PRESS) {
+        shaderID = 0;
+    }
+
+    state = glfwGetKey(window, keyInput::rightArrow);
+
+    if (state == GLFW_PRESS) {
+        shaderID = 1;
     }
 
     
@@ -371,9 +383,4 @@ void SceneBasic_Uniform::changeShader(int key)
     {
         shaderID = 1;
     }
-}
-
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    
 }

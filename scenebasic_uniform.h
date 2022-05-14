@@ -53,7 +53,6 @@ public:
     void render();
     void resize(int, int);
     void changeShader(int key);
-    void key_callback(GLFWwindow* window, int key, int scancode ,int action, int mods);
 };
 
 #endif // SCENEBASIC_UNIFORM_H
