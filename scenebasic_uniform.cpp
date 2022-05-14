@@ -15,12 +15,20 @@ using glm::vec4;
 float angle;
 float timer;
 
+enum keyInput {
+
+    leftArrow = GLFW_KEY_LEFT,
+    rightArrow = GLFW_KEY_RIGHT
+};
+
 //constructor for scene objects
 SceneBasic_Uniform::SceneBasic_Uniform() : tPrev(0), shadowMapWidth(512), shadowMapHeight(512), teapot(14, mat4(1.0f)), plane(40.0f, 40.0f, 2.0f, 2.0f), torus(0.7f * 2.0f, 0.3f * 2.0f, 50, 50) {}
 
 void SceneBasic_Uniform::initScene()
 {
     compile();
+
+    glfwSetKeyCallback(glfwGetCurrentContext(), key_callback);
 
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
@@ -59,6 +67,7 @@ void SceneBasic_Uniform::initScene()
     prog.setUniform("Light.Ls", vec3(0.85f));
     prog.setUniform("ShadowMap", 0);
 
+    wireProg.use();
     wireProg.setUniform("Line.Width", 0.75f);
     wireProg.setUniform("Line.Color", vec4(0.05f, 0.0f, 0.05f, 1.0f));
     wireProg.setUniform("Material.Kd", 0.7f, 0.7f, 0.7f);
@@ -232,6 +241,16 @@ void SceneBasic_Uniform::render()
     case(1):
     {
         wireProg.use();
+
+        /*wireProg.setUniform("Line.Width", 0.75f);
+        wireProg.setUniform("Line.Color", vec4(0.05f, 0.0f, 0.05f, 1.0f));
+        wireProg.setUniform("Material.Kd", 0.7f, 0.7f, 0.7f);
+        wireProg.setUniform("Light.Position", vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        wireProg.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
+        wireProg.setUniform("Light.Intensity", 1.0f, 1.0f, 1.0f);
+        wireProg.setUniform("Material.Ks", 0.8f, 0.8f, 0.8f);
+        wireProg.setUniform("Material.Shininess", 100.0f);*/
+
         float c = 2.0f;
         vec3 cameraPos(c * 11.5f * cos(angle), c * 7.0f, c * 11.5f * sin(angle));
         view = glm::lookAt(cameraPos, vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
@@ -257,7 +276,7 @@ void SceneBasic_Uniform::render()
 
         break;
     }
-
+        
     }
 }
 
@@ -341,4 +360,20 @@ void SceneBasic_Uniform::resize(int w, int h)
         vec4(0.0f, h2, 0.0f, 0.0f),
         vec4(0.0f, 0.0f, 1.0f, 0.0f),
         vec4(w2 + 0, h2 + 0, 0.0f, 1.0f));
+}
+
+void SceneBasic_Uniform::changeShader(int key)
+{
+    if (key = 0) {
+        shaderID = 0;
+    }
+    else
+    {
+        shaderID = 1;
+    }
+}
+
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    
 }
