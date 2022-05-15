@@ -74,9 +74,11 @@ vec3 phongModelWithShadows(){
     }
 }
 
+//depending on currently selected pass, does different subroutine
 subroutine void RenderPassType();
 subroutine uniform RenderPassType RenderPass;
 
+//pass 2 subroutine, calculates, and renders scene with, shadows
 subroutine (RenderPassType)
 void shadeWithShadow(){
 
@@ -85,6 +87,7 @@ vec3 diffAndSpec = phongModelWithShadows();
 
 float shadow = 1.0;
 
+//if the fragment is within shadow on the shadowmap, only apply ambient light
 if(ShadowCoord.z >= 0){
 
 shadow = textureProj(ShadowMap, ShadowCoord);
@@ -99,6 +102,7 @@ FragColor = pow(FragColor, vec4(1.0 / 2.2));
 
 }
 
+//pass 1 subroutine, gets depth of shadowmap.
 subroutine (RenderPassType)
 void RecordDepth()
 {

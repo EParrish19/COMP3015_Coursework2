@@ -18,7 +18,8 @@ float timer;
 enum keyInput {
 
     leftArrow = GLFW_KEY_LEFT,
-    rightArrow = GLFW_KEY_RIGHT
+    rightArrow = GLFW_KEY_RIGHT,
+    upArrow = GLFW_KEY_UP
 };
 
 //constructor for scene objects
@@ -43,6 +44,7 @@ void SceneBasic_Uniform::initScene()
     //set up object for framebuffer
     setupFBO();
 
+    //get indexes for different subroutines used in shadows
     GLuint programHandle = prog.getHandle();
     pass1Index = glGetSubroutineIndex(programHandle, GL_FRAGMENT_SHADER, "RecordDepth");
     pass2Index = glGetSubroutineIndex(programHandle, GL_FRAGMENT_SHADER, "shadeWithShadow");
@@ -56,15 +58,18 @@ void SceneBasic_Uniform::initScene()
 
     vec3 lightPos = vec3(0.0f, c * 5.25f, c * 7.5f); //in world coords
 
+    //generate lightFrustum used to orient shadows
     lightFrustum.orient(lightPos, vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
     lightFrustum.setPerspective(50.0f, 1.0f, 1.0f, 25.0f);
     lightPV = shadowBias * lightFrustum.getProjectionMatrix() * lightFrustum.getViewMatrix();
 
+    //set uniforms for use in shadows
     prog.setUniform("Light.La", vec3(0.0f));
     prog.setUniform("Light.Ld", vec3(0.85f));
     prog.setUniform("Light.Ls", vec3(0.85f));
     prog.setUniform("ShadowMap", 0);
 
+    //set uniforms for wireframe shader
     wireProg.use();
     wireProg.setUniform("Line.Width", 0.75f);
     wireProg.setUniform("Line.Color", vec4(0.05f, 0.0f, 0.05f, 1.0f));
@@ -74,7 +79,6 @@ void SceneBasic_Uniform::initScene()
     wireProg.setUniform("Light.Intensity", 1.0f, 1.0f, 1.0f);
     wireProg.setUniform("Material.Ks", 0.8f, 0.8f, 0.8f);
     wireProg.setUniform("Material.Shininess", 100.0f);
-
 
     //set up textures
     GLuint metal = Texture::loadTexture("./media/texture/me_textile.png");
@@ -187,20 +191,22 @@ void SceneBasic_Uniform::update( float t )
         }
     }*/
 
+    //get current opengl context
     GLFWwindow* window = glfwGetCurrentContext();
 
+    //if left arrow key is pressed, switch to shadows shader
     int state = glfwGetKey(window, keyInput::leftArrow);
 
     if (state == GLFW_PRESS) {
         shaderID = 0;
     }
 
+    //if right arrow key is pressed, switch to wireframe shader
     state = glfwGetKey(window, keyInput::rightArrow);
 
     if (state == GLFW_PRESS) {
         shaderID = 1;
     }
-
     
 }
 
@@ -208,6 +214,7 @@ void SceneBasic_Uniform::render()
 {
     switch (shaderID) {
 
+        //shadows shader
     case(0):
     {
         prog.use();
@@ -250,6 +257,7 @@ void SceneBasic_Uniform::render()
         break;
     }
 
+    //wireframe shader
     case(1):
     {
         wireProg.use();
@@ -288,12 +296,13 @@ void SceneBasic_Uniform::render()
 
         break;
     }
-        
+
     }
 }
 
 void SceneBasic_Uniform::drawScene()
 {
+    //sets materials, matrices and renders objects for shadows shader
     vec3 color = vec3(0.2f, 0.5f, 0.9f);
     prog.setUniform("Material.Ka", color * 0.05f);
     prog.setUniform("Material.Kd", color);
@@ -346,8 +355,9 @@ void SceneBasic_Uniform::setMatrices()
 
         prog.setUniform("ShadowMatrix", lightPV * model); // sets shadow matrix
     }
-    else {
+    else if(shaderID == 1){
 
+        //similar to above, but shadowMatrix is replaced with ViewportMatrix
         wireProg.setUniform("ModelViewMatrix", mv);
 
         wireProg.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2])));
@@ -356,6 +366,7 @@ void SceneBasic_Uniform::setMatrices()
 
         wireProg.setUniform("ViewportMatrix", viewport);
     }
+
 }
 
 void SceneBasic_Uniform::resize(int w, int h)
@@ -368,19 +379,9 @@ void SceneBasic_Uniform::resize(int w, int h)
     float w2 = w / 2.0f;
     float h2 = h / 2.0f;
 
+    //create viewport matrix for wireframe shader
     viewport = mat4(vec4(w2, 0.0f, 0.0f, 0.0f), 
         vec4(0.0f, h2, 0.0f, 0.0f),
         vec4(0.0f, 0.0f, 1.0f, 0.0f),
         vec4(w2 + 0, h2 + 0, 0.0f, 1.0f));
-}
-
-void SceneBasic_Uniform::changeShader(int key)
-{
-    if (key = 0) {
-        shaderID = 0;
-    }
-    else
-    {
-        shaderID = 1;
-    }
 }

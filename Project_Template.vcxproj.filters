@@ -142,6 +142,21 @@
     <CopyFileToFolders Include="media\texture\moss.png">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="shader\shadows.frag">
+      <Filter>shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="shader\shadows.vert">
+      <Filter>shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="shader\wireframe.frag">
+      <Filter>shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="shader\wireframe.geom">
+      <Filter>shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="shader\wireframe.vert">
+      <Filter>shaders</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <None Include="shader\solid.frag">
@@ -150,19 +165,13 @@
     <None Include="shader\solid.vert">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shadows.frag">
+    <None Include="shader\silhouettelines.vert">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shadows.vert">
+    <None Include="shader\silhouettelines.geom">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\wireframe.vert">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="shader\wireframe.frag">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="shader\wireframe.geom">
+    <None Include="shader\silhouettelines.frag">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

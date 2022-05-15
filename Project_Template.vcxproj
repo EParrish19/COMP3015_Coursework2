@@ -78,8 +78,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\eparrish\Dependencies\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\eparrish\Dependencies\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Dependencies\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Dependencies\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -202,13 +202,31 @@
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
+    <CopyFileToFolders Include="shader\shadows.frag">
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)/shader</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="shader\shadows.vert">
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)/shader</DestinationFolders>
+    </CopyFileToFolders>
+    <None Include="shader\silhouettelines.frag" />
+    <None Include="shader\silhouettelines.geom" />
+    <None Include="shader\silhouettelines.vert" />
     <None Include="shader\solid.frag" />
     <None Include="shader\solid.vert" />
-    <None Include="shader\wireframe.frag" />
-    <None Include="shader\wireframe.geom" />
-    <None Include="shader\wireframe.vert" />
-    <None Include="shadows.frag" />
-    <None Include="shadows.vert" />
+    <CopyFileToFolders Include="shader\wireframe.frag">
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)/shader</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="shader\wireframe.geom">
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)/shader</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="shader\wireframe.vert">
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)/shader</DestinationFolders>
+    </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
