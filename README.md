@@ -1,4 +1,4 @@
-# COMP3015 Coursework 2 OpenGL shader prototype
+# COMP3015 Coursework 2 OpenGL Developer Tool Prototype
 
 ### This is my submission for COMP3015 Coursework 2, this submission build supon my submission for coursework 1, adding extra effects such as shadows. As stated, my submission for coursework 1 was used as a start point for this submission.
 
