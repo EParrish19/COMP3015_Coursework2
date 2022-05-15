@@ -10,7 +10,7 @@
 
 ### This project builds upon the previous coursework, but instead of showing differences between phong, blinn-phong and toon shading, this project instead focuses on showcasing shadows and a wireframe renderer, as well as having limited user input, specifically, left arrow key to select shadows shader and right arrow key to select wireframe shader.
 
-### To run the project, use the compiled Project_Template.exe, or access the solution with Project_Template.sln.
+### To run the project, use the compiled Project_Template.exe in x64/debug, or access the solution with Project_Template.sln.
 
 ### Controls are left arrow for shadows shader, right arrow for wireframe shader.
 
